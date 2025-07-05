@@ -1,10 +1,13 @@
 from flask import Flask, render_template, request, jsonify
 import os
 from dotenv import load_dotenv
-import openai
+env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+load_dotenv(dotenv_path=env_path)
 
-# Load environment variables from .env
-load_dotenv()
+import openai
+openai.api_key = os.getenv("OPENROUTER_API_KEY")
+openai.base_url = "https://openrouter.ai/api/v1"
+
 
 app = Flask(__name__)
 
