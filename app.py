@@ -68,7 +68,7 @@ def chat():
     }
 
     payload = {
-        "model": "mistralai/mixtral-8x7b-instruct",
+        "model":"google/gemini-pro",
         "messages": messages
     }
 
