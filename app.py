@@ -1,15 +1,22 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import os
+import requests
 from dotenv import load_dotenv
+
+# Load environment variables from .env (for local dev)
 env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 load_dotenv(dotenv_path=env_path)
 
-import openai
-openai.api_key = os.getenv("OPENROUTER_API_KEY")
-openai.base_url = "https://openrouter.ai/api/v1"
-
+# Check if API key is loaded
+api_key = os.getenv("OPENROUTER_API_KEY")
+if api_key:
+    print("✅ API key loaded. Starts with:", api_key[:5], "...")
+else:
+    print("❌ API key NOT found. Check your environment settings.")
 
 app = Flask(__name__)
+CORS(app)  # Optional: allow frontend access
 
 @app.route("/")
 def home():
@@ -33,45 +40,47 @@ def chat():
             )
         })
 
-    # Chat messages with assistant context
+    # Compose messages
     messages = [
-    {
-        "role": "system",
-        "content": (
-            "You are a supportive, calming, and emotionally intelligent mental health support assistant. "
-            "You listen with compassion and validate the user's feelings without judgment. "
-            "Use natural, comforting language, like a kind friend or supportive counselor — not robotic. "
-            "Speak in short, clear paragraphs. Pause with gentle encouragements. "
-            "Always remind the user they are not alone, and help is available. "
-            "Avoid medical advice. Instead, offer helpful coping strategies, emotional support, and suggest professional help when appropriate. "
-            "Be especially gentle when the user expresses distress, fear, sadness, or overwhelm. "
-            "Use soft language like: 'That sounds really tough...', 'I hear you...', 'You're doing the best you can, and that's enough.'"
-        )
-    },
-    {
-        "role": "user",
-        "content": user_input
+        {
+            "role": "system",
+            "content": (
+                "You are a supportive, calming, and emotionally intelligent mental health support assistant. "
+                "You listen with compassion and validate the user's feelings without judgment. "
+                "Use natural, comforting language, like a kind friend or supportive counselor — not robotic. "
+                "Speak in short, clear paragraphs. Pause with gentle encouragements. "
+                "Always remind the user they are not alone, and help is available. "
+                "Avoid medical advice. Instead, offer helpful coping strategies, emotional support, and suggest professional help when appropriate. "
+                "Be especially gentle when the user expresses distress, fear, sadness, or overwhelm. "
+                "Use soft language like: 'That sounds really tough...', 'I hear you...', 'You're doing the best you can, and that's enough.'"
+            )
+        },
+        {
+            "role": "user",
+            "content": user_input
+        }
+    ]
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
     }
-]
 
-
+    payload = {
+        "model": "mistralai/mixtral-8x7b-instruct",
+        "messages": messages
+    }
 
     try:
-        # Connect to OpenRouter
-        client = openai.OpenAI(
-            api_key=os.getenv("OPENROUTER_API_KEY"),
-            base_url="https://openrouter.ai/api/v1"
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload
         )
-
-        # Generate assistant reply
-        response = client.chat.completions.create(
-            model="mistralai/mixtral-8x7b-instruct",  # You can also use: mistralai/mixtral-8x7b-instruct
-            messages=messages
-        )
-        bot_reply = response.choices[0].message.content
-
+        response.raise_for_status()
+        bot_reply = response.json()["choices"][0]["message"]["content"]
     except Exception as e:
-        print("OpenRouter Error:", e)
+        print("❌ OpenRouter Error:", e)
         bot_reply = "Sorry, I'm having trouble responding right now. Please try again later."
 
     return jsonify({"response": bot_reply})
@@ -79,5 +88,3 @@ def chat():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-print("KEY:", os.getenv("OPENROUTER_API_KEY"))
-
