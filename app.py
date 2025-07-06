@@ -69,7 +69,7 @@ def chat():
     }
 
     payload = {
-        "model": "openai/gpt-3.5-turbo",
+        "model": "nousresearch/nous-capybara-7b",
         "messages": messages
     }
 
