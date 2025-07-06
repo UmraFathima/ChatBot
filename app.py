@@ -76,7 +76,7 @@ def chat():
     # 📡 Make API Request
     try:
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
+            "https://openrouter.ai/v1/chat/completions",
             headers=headers,
             json=payload
         )
