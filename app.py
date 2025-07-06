@@ -81,7 +81,7 @@ def chat():
         response.raise_for_status()
         bot_reply = response.json()["choices"][0]["message"]["content"]
     except Exception as e:
-    bot_reply = f"⚠️ API Error: {str(e)}"
+        bot_reply = f"⚠️ API Error: {str(e)}"
 
     return jsonify({"response": bot_reply})
 
