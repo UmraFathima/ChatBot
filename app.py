@@ -68,7 +68,7 @@ def chat():
     }
 
     payload = {
-        "model":"google/gemini-pro",
+        "model":"openai/gpt-3.5-turbo",
         "messages": messages
     }
 
