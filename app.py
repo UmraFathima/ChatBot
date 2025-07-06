@@ -1,23 +1,23 @@
-
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 import os
 import requests
 from dotenv import load_dotenv
 
-# Load environment variables from .env (for local dev)
+# Load environment variables from .env
 env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 load_dotenv(dotenv_path=env_path)
 
-# Check if API key is loaded
+# Get API Key
 api_key = os.getenv("OPENROUTER_API_KEY")
 if api_key:
     print("✅ API key loaded. Starts with:", api_key[:5], "...")
 else:
     print("❌ API key NOT found. Check your environment settings.")
 
+# Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Optional: allow frontend access
+CORS(app)  # Optional: for frontend access
 
 @app.route("/")
 def home():
@@ -25,9 +25,9 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    user_input = request.json.get("message")
+    user_input = request.json.get("message", "")
 
-    # Crisis detection
+    # 🚨 Crisis keyword detection
     crisis_keywords = [
         "suicide", "kill myself", "end my life",
         "harm myself", "cut myself", "want to die"
@@ -41,7 +41,7 @@ def chat():
             )
         })
 
-    # Compose messages
+    # 💬 Messages with empathetic system prompt
     messages = [
         {
             "role": "system",
@@ -62,16 +62,18 @@ def chat():
         }
     ]
 
+    # 🛠️ Headers and Payload
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
 
     payload = {
-        "model":"openai/gpt-3.5-turbo",
+        "model": "openai/gpt-3.5-turbo",
         "messages": messages
     }
 
+    # 📡 Make API Request
     try:
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
@@ -85,8 +87,7 @@ def chat():
 
     return jsonify({"response": bot_reply})
 
+# 🔁 Run Flask App
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
