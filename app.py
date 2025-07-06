@@ -80,8 +80,12 @@ def chat():
             headers=headers,
             json=payload
         )
+        print("RAW RESPONSE STATUS:", response.status_code)
+        print("RAW RESPONSE TEXT:", response.text)  # 👈 this will help us debug
+
         response.raise_for_status()
         bot_reply = response.json()["choices"][0]["message"]["content"]
+
     except Exception as e:
         bot_reply = f"⚠️ API Error: {str(e)}"
 
